@@ -7,13 +7,16 @@ export default async function handler(req, res) {
   const { messages, system } = req.body;
 
   try {
-    // Gemini API 호출을 위한 메시지 구조 변환
+    // Gemini API가 요구하는 메시지 구조로 변환
     const contents = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
     }));
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    // v1 주소와 정확한 모델 경로(models/gemini-1.5-flash)를 사용합니다.
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +27,7 @@ export default async function handler(req, res) {
         },
         contents: contents,
         generationConfig: {
-          maxOutputTokens: 1500,
+          maxOutputTokens: 2000,
           temperature: 0.7,
         }
       }),
@@ -33,13 +36,16 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'Gemini API 응답 오류' });
+      // 구글 스튜디오 키가 유효하지 않거나 할당량이 초과된 경우의 처리
+      return res.status(response.status).json({ 
+        error: data.error?.message || 'Gemini API 호출 중 오류가 발생했습니다.' 
+      });
     }
 
-    // Gemini 응답 텍스트 추출
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "응답을 생성할 수 없습니다.";
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "응답 내용을 찾을 수 없습니다.";
     res.status(200).json({ text: replyText });
+    
   } catch (error) {
-    res.status(500).json({ error: '서버 내부 오류 발생' });
+    res.status(500).json({ error: '서버 내부 오류가 발생했습니다.' });
   }
 }
