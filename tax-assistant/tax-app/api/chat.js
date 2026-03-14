@@ -1,4 +1,4 @@
-// api/chat.js (가장 안정적인 최종 버전)
+// api/chat.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -12,8 +12,8 @@ export default async function handler(req, res) {
       parts: [{ text: m.content }]
     }));
 
-    // v1beta가 system_instruction 필드 인식에 가장 관대합니다.
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    // ✅ v1 엔드포인트를 사용하고 모델명 앞에 models/를 정확히 명시합니다.
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -30,11 +30,11 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       return res.status(response.status).json({ 
-        error: data.error?.message || 'API 응답 오류' 
+        error: data.error?.message || 'Gemini API 호출 중 오류 발생' 
       });
     }
 
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "답변을 생성할 수 없습니다.";
+    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "응답을 생성할 수 없습니다.";
     res.status(200).json({ text: replyText });
     
   } catch (error) {
