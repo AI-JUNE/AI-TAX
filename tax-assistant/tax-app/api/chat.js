@@ -7,14 +7,13 @@ export default async function handler(req, res) {
   const { messages, system } = req.body;
 
   try {
-    // Gemini API가 요구하는 메시지 구조로 변환
     const contents = messages.map(m => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
     }));
 
-    // v1 주소와 정확한 모델 경로(models/gemini-1.5-flash)를 사용합니다.
-    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    // ✅ v1beta 주소를 사용해야 system_instruction 필드가 정상 작동합니다.
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -36,7 +35,6 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      // 구글 스튜디오 키가 유효하지 않거나 할당량이 초과된 경우의 처리
       return res.status(response.status).json({ 
         error: data.error?.message || 'Gemini API 호출 중 오류가 발생했습니다.' 
       });
