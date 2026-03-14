@@ -222,7 +222,7 @@ export default function App() {
           <div className="nav-sec">업무 모듈</div>
           {MODS.map(m=>{const on=modId===m.id;return(<button key={m.id} className={`nav-btn ${on?"nav-on":""}`} style={on?{background:m.light,borderColor:m.mid}:{}} onClick={()=>switchMod(m.id)}><span className="nav-ico">{m.icon}</span><div className="nav-txt"><span className="nav-lbl" style={on?{color:m.color}:{}}>{m.label}</span><span className="nav-tag">{m.tag}</span></div>{on&&<span className="nav-pip" style={{background:m.color}}/>}</button>);})}
         </nav>
-        <div className="sb-foot"><span className="gdot"/><span className="sb-stat">Claude Sonnet 3.5</span></div>
+        <div className="sb-foot"><span className="gdot"/><span className="sb-stat">Gemini 1.5 Flash</span></div>
       </aside>
       <div className="main">
         <header className="hdr">
